@@ -131,7 +131,7 @@ const LoginDialog = ({ open }: { open: boolean }) => {
   const doSignIn = async (formData: FormData, captchaValue?: string) => {
     try {
       setSigninPending(true)
-      const authorization = await signIn({
+      const result = await signIn({
         username: formData.username,
         password: formData.password,
         keep_signed_in: formData.keepSignedIn,
@@ -140,10 +140,8 @@ const LoginDialog = ({ open }: { open: boolean }) => {
           captcha_type: captcha?.name,
         }),
       })
-      if (authorization) {
-        persistedStates.authorizationHeader = authorization
-        close()
-      }
+      persistedStates.authorizationHeader = result.authorization
+      close()
     } catch (e_) {
       const e = e_ as
         | {
@@ -181,7 +179,7 @@ const LoginDialog = ({ open }: { open: boolean }) => {
         <Alert severity="info">{state.globalDialog.prompt}</Alert>
       )}
       <Tabs value={0} sx={{ my: 1.5 }}>
-        <Tab label="用户名密码登录" />
+        <Tab label="河畔密码登录" />
         <Tab label="统一身份认证登录" onClick={() => gotoIdas()} />
       </Tabs>
       <form onSubmit={onSubmit} ref={formRef}>
@@ -219,6 +217,18 @@ const LoginDialog = ({ open }: { open: boolean }) => {
             </Stack>
           </>
         )}
+        <Stack direction="row" justifyContent="center" mb={1.5}>
+          <Button onClick={() => gotoIdas({ mode: 'resetpassword' })}>
+            忘记密码
+          </Button>
+          <Button
+            onClick={() =>
+              dispatch({ type: 'open dialog', payload: { kind: 'register' } })
+            }
+          >
+            注册新用户
+          </Button>
+        </Stack>
         <Stack direction="row" justifyContent="center">
           <Button type="submit" disabled={signinPending} variant="contained">
             {signinPending ? '请稍候...' : '登录'}

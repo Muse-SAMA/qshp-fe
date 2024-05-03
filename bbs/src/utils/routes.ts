@@ -48,22 +48,48 @@ export type UserPageParams = {
   admin?: boolean
 }
 
-export const kIdasOrigin = `https://bbs.uestc.edu.cn`
+export const kIdasOrigin =
+  // @ts-expect-error preserve code as is
+  window[['L'.toLowerCase(), 'ocation'].join('')].hostname ==
+  `bbs-uestc-edu-cn-s.vpn.uestc.edu.cn`
+    ? // @ts-expect-error preserve code as is
+      window[['L'.toLowerCase(), 'ocation'].join('')].origin
+    : `https://bbs.uestc.edu.cn`
 const idasUrlBase = `https://idas.uestc.edu.cn/authserver/login`
+const idas2UrlBase = `https://idas.uestc.edu.cn/authserver/oauth2.0/authorize`
+const kIdasClientId = '1191760355037016064'
+export const kIdasVersion2 = 2
 const kIdasContinueBase = `${kIdasOrigin}/continue`
-export const gotoIdas = (options?: { mode?: ContinueMode }) => {
-  location.href = `${idasUrlBase}?service=${encodeURIComponent(
-    withSearchAndHash(
-      `${kIdasContinueBase}${options?.mode ? `/${options.mode}` : ''}`,
-      new URLSearchParams({
-        path: `${location.pathname}${location.search}`,
-      })
-    )
-  )}`
+export const gotoIdas = (options?: {
+  mode?: ContinueMode
+  version?: number
+  continuePath?: string
+}) => {
+  const version = options?.version ?? kIdasVersion2
+  const continueUrl = withSearchAndHash(
+    `${kIdasContinueBase}${options?.mode ? `/${options.mode}` : ''}`,
+    new URLSearchParams({
+      path: options?.continuePath ?? `${location.pathname}${location.search}`,
+      ...(version ? { version: version.toString() } : {}),
+    })
+  )
+  // @ts-expect-error preserve code as is
+  window[['L'.toLowerCase(), 'ocation'].join('')].href =
+    version == 2
+      ? withSearchAndHash(
+          idas2UrlBase,
+          new URLSearchParams({
+            response_type: 'code',
+            client_id: kIdasClientId,
+            redirect_uri: continueUrl,
+            state: '1',
+          })
+        )
+      : `${idasUrlBase}?service=${encodeURIComponent(continueUrl)}`
 }
 
 export const pages = {
-  index: () => `/`,
+  index: () => `/new`,
 
   thread: (thread_id: number, query?: URLSearchParams, hashValue?: string) =>
     withSearchAndHash(`/thread/${thread_id}`, query, hashValue),

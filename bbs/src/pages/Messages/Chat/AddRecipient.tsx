@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-key */
-import * as React from 'react'
+import { useState } from 'react'
 
 import CheckBoxIcon from '@mui/icons-material/CheckBox'
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank'
@@ -15,7 +15,7 @@ const icon = <CheckBoxOutlineBlankIcon fontSize="small" />
 const checkedIcon = <CheckBoxIcon fontSize="small" />
 
 export default function ChooseFriends() {
-  const [selectedChips, setSelectedChips] = React.useState(0)
+  const [selectedChips, setSelectedChips] = useState(0)
   return (
     <Stack>
       <Autocomplete
