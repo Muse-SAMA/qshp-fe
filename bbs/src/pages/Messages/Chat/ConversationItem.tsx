@@ -24,27 +24,28 @@ type ConversationItemProps = {
   lite?: boolean
   summary?: boolean
   showOptSelect: boolean
+  onCheckboxChange: (isChecked: boolean) => void
 }
 
 const ConversationItem = forwardRef<
   HTMLLIElement | null,
   ConversationItemProps
 >(function ConversationItem(
-  { chat, selected, lite, summary, showOptSelect }: ConversationItemProps,
+  {
+    chat,
+    selected,
+    lite,
+    summary,
+    showOptSelect,
+    onCheckboxChange,
+  }: ConversationItemProps,
   ref?
 ) {
-  const [checked, setChecked] = useState([1])
-  const handleToggle = (value: number) => () => {
-    const currentIndex = checked.indexOf(value)
-    const newChecked = [...checked]
-
-    if (currentIndex === -1) {
-      newChecked.push(value)
-    } else {
-      newChecked.splice(currentIndex, 1)
-    }
-
-    setChecked(newChecked)
+  const [checked, setChecked] = useState(false)
+  const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const isChecked = event.target.checked
+    setChecked(isChecked)
+    onCheckboxChange(isChecked)
   }
 
   const liteProps = lite
@@ -53,6 +54,7 @@ const ConversationItem = forwardRef<
         minWidth: '1em',
       }
     : {}
+
   return (
     <ListItem
       key={chat.conversation_id}
@@ -60,8 +62,8 @@ const ConversationItem = forwardRef<
         showOptSelect && (
           <Checkbox
             edge="start"
-            onChange={handleToggle(chat.conversation_id)}
-            checked={checked.indexOf(chat.conversation_id) !== -1}
+            checked={checked}
+            onChange={handleCheckboxChange}
             style={!lite ? { marginRight: '20px' } : { marginRight: '0px' }}
           />
         )

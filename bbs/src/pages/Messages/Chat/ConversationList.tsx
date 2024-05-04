@@ -17,12 +17,14 @@ const ConversationList = ({
   lite,
   activeConversation,
   showOptSelect,
+  onCheckboxChange,
 }: {
   list: ChatConversation[]
   pagination?: PaginationParams
   lite?: boolean
   activeConversation?: ChatConversation
   showOptSelect: boolean
+  onCheckboxChange: (isChecked: boolean) => void
 }) => {
   const [searchParams, setSearchParams] = useSearchParams()
   const activeRef = useRef<HTMLLIElement>(null)
@@ -40,6 +42,7 @@ const ConversationList = ({
             selected={chat == activeConversation}
             ref={chat == activeConversation ? activeRef : undefined}
             showOptSelect={showOptSelect}
+            onCheckboxChange={onCheckboxChange}
           />
         ))}
       </List>

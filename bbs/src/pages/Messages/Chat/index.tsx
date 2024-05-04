@@ -54,6 +54,19 @@ const Chat = () => {
     setShowOptSelect((prev) => !prev)
   }
 
+  // 记录当前选择的复选框个数
+  const [selectedCount, setSelectedCount] = useState(0)
+
+  const handleCheckboxChange = (checked: boolean) => {
+    setSelectedCount((prevCount) => (checked ? prevCount + 1 : prevCount - 1))
+  }
+
+  const buttonProps = {
+    backgroundColor: 'inherit',
+    border: 'none',
+    fontSize: '14px',
+  }
+
   return (
     <Paper sx={{ flexGrow: 1 }}>
       <div
@@ -71,12 +84,10 @@ const Chat = () => {
           }}
         >
           <Button
+            {...buttonProps}
             sx={(theme) => ({
               margin: '8px',
               width: 'auto',
-              backgroundColor: 'inherit',
-              border: 'none',
-              fontSize: '14px',
               color: theme.palette.mode == 'light' ? '#0268FD' : '#90CAF9',
             })}
             onClick={toggleOptSelect}
@@ -86,32 +97,29 @@ const Chat = () => {
           {showOptSelect && (
             <>
               <Button
+                {...buttonProps}
                 sx={(theme) => ({
-                  backgroundColor: 'inherit',
-                  border: 'none',
-                  fontSize: '14px',
                   color: theme.palette.mode == 'light' ? '#0268FD' : '#90CAF9',
                 })}
+                disabled={selectedCount === 0}
               >
                 设为已读
               </Button>
               <Button
+                {...buttonProps}
                 sx={(theme) => ({
-                  backgroundColor: 'inherit',
-                  border: 'none',
-                  fontSize: '14px',
                   color: theme.palette.mode == 'light' ? '#E26666' : '#DF6A6A',
                 })}
+                disabled={selectedCount === 0}
               >
                 删除
               </Button>
               <Button
+                {...buttonProps}
                 sx={(theme) => ({
-                  backgroundColor: 'inherit',
-                  border: 'none',
-                  fontSize: '14px',
                   color: theme.palette.mode == 'light' ? '#0268FD' : '#90CAF9',
                 })}
+                disabled={selectedCount !== 1}
               >
                 举报
               </Button>
@@ -137,6 +145,7 @@ const Chat = () => {
       </div>
       {chatId || uid ? (
         <Conversation
+          onCheckboxChange={handleCheckboxChange}
           chatId={chatId}
           uid={uid}
           initialList={query.page == 1 ? chatList?.rows : undefined}
@@ -144,6 +153,7 @@ const Chat = () => {
         />
       ) : chatList ? (
         <ConversationList
+          onCheckboxChange={handleCheckboxChange}
           list={chatList.rows}
           pagination={chatList}
           showOptSelect={showOptSelect}

@@ -30,7 +30,7 @@ import Avatar from '@/components/Avatar'
 import Link from '@/components/Link'
 import { useAppState } from '@/states'
 import { chineseTime } from '@/utils/dayjs'
-import { pages } from '@/utils/routes.ts'
+import { pages } from '@/utils/routes'
 import { handleCtrlEnter } from '@/utils/tools'
 
 import ConversationList from './ConversationList'
@@ -43,11 +43,13 @@ const Conversation = ({
   uid,
   initialList,
   showOptSelect,
+  onCheckboxChange,
 }: {
   chatId?: number
   uid?: number
   initialList?: ChatConversation[]
   showOptSelect: boolean
+  onCheckboxChange: (isChecked: boolean) => void
 }) => {
   const { state } = useAppState()
   const [chatList, setChatList] = useState(initialList)
@@ -182,11 +184,13 @@ const Conversation = ({
     refreshNewMessages()
   }
   //高度最大为视窗高度减去200像素
+
   return (
     <Stack direction="row" maxHeight="calc(100vh - 200px)">
       {/* 左侧栏 */}
       <Box sx={{ width: 200 }} flexShrink={0} overflow="auto">
         <ConversationList
+          onCheckboxChange={onCheckboxChange}
           list={chatList || []} // 聊天列表，如果不存在则为空数组
           lite={true}
           showOptSelect={showOptSelect}
