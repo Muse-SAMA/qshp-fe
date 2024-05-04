@@ -11,6 +11,7 @@ import { useSignInChange } from '@/states'
 
 import Conversation from './Conversation'
 import ConversationList from './ConversationList'
+import Report from './ConversationReport'
 
 // 这个函数用于尝试将字符串转换为整数，如果无法转换或者转换结果为NaN，则返回undefined
 const tryParseInt = (value?: string) => {
@@ -114,15 +115,7 @@ const Chat = () => {
               >
                 删除
               </Button>
-              <Button
-                {...buttonProps}
-                sx={(theme) => ({
-                  color: theme.palette.mode == 'light' ? '#0268FD' : '#90CAF9',
-                })}
-                disabled={selectedCount !== 1}
-              >
-                举报
-              </Button>
+              <Report selectedCount={selectedCount}></Report>
             </>
           )}
           {/* 这里的设置好像是用于黑名单的衍生功能 */}
