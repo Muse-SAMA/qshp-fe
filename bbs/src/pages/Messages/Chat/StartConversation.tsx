@@ -75,7 +75,7 @@ const StartConversation = () => {
           <TextField
             fullWidth
             id="outlined-multiline-static"
-            label="发送内容*"
+            label="内容*"
             placeholder="请填写发送内容"
             multiline
             rows={5}
@@ -83,7 +83,7 @@ const StartConversation = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>取消发送</Button>
+          <Button onClick={handleClose}>关闭</Button>
           <Button type="submit">发送</Button>
         </DialogActions>
       </Dialog>

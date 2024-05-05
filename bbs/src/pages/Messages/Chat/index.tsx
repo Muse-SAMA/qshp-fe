@@ -4,10 +4,12 @@ import { useEffect, useState } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
 
 import SettingsIcon from '@mui/icons-material/Settings'
-import { Button, Link, Paper, Skeleton } from '@mui/material'
+import { Button, Paper, Skeleton } from '@mui/material'
 
 import { getChatList } from '@/apis/messages'
+import Link from '@/components/Link'
 import { useSignInChange } from '@/states'
+import { pages } from '@/utils/routes'
 
 import Conversation from './Conversation'
 import ConversationList from './ConversationList'
@@ -115,12 +117,14 @@ const Chat = () => {
               >
                 删除
               </Button>
-              <Report selectedCount={selectedCount}></Report>
+              {selectedCount === 1 && (
+                <Report selectedCount={selectedCount}></Report>
+              )}
             </>
           )}
           {/* 这里的设置好像是用于黑名单的衍生功能 */}
         </p>
-        <Link href="/settings/blacklist">
+        <Link to={pages.settings('blacklist')}>
           <Button
             sx={(theme) => ({
               marginRight: '20px',
