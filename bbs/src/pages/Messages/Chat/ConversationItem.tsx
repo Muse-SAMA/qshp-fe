@@ -1,4 +1,4 @@
-import { forwardRef, useState } from 'react'
+import { forwardRef } from 'react'
 
 import { Groups } from '@mui/icons-material'
 import {
@@ -24,6 +24,7 @@ type ConversationItemProps = {
   lite?: boolean
   summary?: boolean
   showOptSelect: boolean
+  checked: boolean
   onCheckboxChange: (isChecked: boolean) => void
 }
 
@@ -37,14 +38,13 @@ const ConversationItem = forwardRef<
     lite,
     summary,
     showOptSelect,
+    checked,
     onCheckboxChange,
   }: ConversationItemProps,
   ref?
 ) {
-  const [checked, setChecked] = useState(false)
   const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const isChecked = event.target.checked
-    setChecked(isChecked)
     onCheckboxChange(isChecked)
   }
 

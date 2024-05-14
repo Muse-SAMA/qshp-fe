@@ -210,7 +210,7 @@ const Conversation = ({
           flexShrink={0}
           overflow="auto"
         >
-          <ChildComponent />
+          <ReturnList />
         </Box>
 
         <List
@@ -313,7 +313,7 @@ const Conversation = ({
 }
 
 //让返回按钮能够返回站内信的主页面
-const ChildComponent = () => {
+const ReturnList = () => {
   const navigate = useNavigate()
 
   const handleReturn = () => {
