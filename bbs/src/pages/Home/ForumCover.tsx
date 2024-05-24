@@ -44,7 +44,7 @@ const ForumCover = ({ data }: ForumData) => {
         }}
       ></Box>
       <Box className="absolute top-0 left-0 h-full w-full bg-black opacity-40"></Box>
-      <Box className="relative z-10 p-4">
+      <Box className="relative p-4">
         <Stack
           direction="row"
           justifyContent="space-between"
@@ -181,7 +181,7 @@ export const ForumGroup = ({ data }: ForumData) => {
           {data?.children
             ?.filter((item) => item.name)
             .map((item, index) => (
-              <Grid item md={6} xl={4} key={index} style={{ width: '100%' }}>
+              <Grid item sm={6} lg={4} key={index} style={{ width: '100%' }}>
                 <ForumCover data={item} />
               </Grid>
             ))}

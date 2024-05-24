@@ -8,7 +8,15 @@ import {
   useSearchParams,
 } from 'react-router-dom'
 
-import { Box, List, ListItem, Pagination, Skeleton, Stack } from '@mui/material'
+import {
+  Box,
+  List,
+  ListItem,
+  Pagination,
+  Skeleton,
+  Stack,
+  useMediaQuery,
+} from '@mui/material'
 
 import { getPostDetails, getThreadsInfo, kPostPageSize } from '@/apis/thread'
 import { ForumDetails } from '@/common/interfaces/forum'
@@ -19,29 +27,46 @@ import PostEditor from '@/components/Editor/PostEditor'
 import Error from '@/components/Error'
 import Link from '@/components/Link'
 import { PostRenderer } from '@/components/RichText'
+import { InternalStamp, ThreadStamp } from '@/components/Stamps'
 import { useAppState, useSignInChange } from '@/states'
 import { pages } from '@/utils/routes'
 import { scrollAnchorCss, scrollAnchorSx } from '@/utils/scrollAnchor'
 import { searchParamsAssign } from '@/utils/tools'
 
 import Floor from './Floor'
+import { useWatermark } from './Watermark'
 import ActionDialog from './dialogs/index'
 import { ActionDialogType, PostDetailsByPostIdEx } from './types'
+
+const kEnforceInternalFids = [
+  174, // 就业创业
+  395, // 藏经阁
+  263, // 职场交流
+  267, // 非技术
+  378, // 晾晒专栏
+]
 
 const ForumPagination = (props: {
   count: number
   page: number
   onChange: (e: React.ChangeEvent<unknown>, page: number) => void
-}) => (
-  <Stack direction="row" justifyContent="center" my={1.5}>
-    {props.count > 1 && (
-      <Pagination boundaryCount={3} siblingCount={1} {...props} />
-    )}
-  </Stack>
-)
+}) => {
+  const thinView = useMediaQuery('(max-width: 560px)')
+  return (
+    <Stack direction="row" justifyContent="center" my={1.5}>
+      {props.count > 1 && (
+        <Pagination
+          boundaryCount={thinView ? 1 : 3}
+          siblingCount={1}
+          {...props}
+        />
+      )}
+    </Stack>
+  )
+}
 
 function Thread() {
-  const { dispatch } = useAppState()
+  const { state, dispatch } = useAppState()
   const navigate = useNavigate()
 
   const [searchParams, setSearchParams] = useSearchParams()
@@ -59,6 +84,9 @@ function Thread() {
   const closeDialog = () => setDialogOpen(false)
   const [currentDialog, setCurrentDialog] =
     useState<ActionDialogType>(undefined)
+  const isInternalEnforced =
+    !!threadDetails?.forum_id &&
+    kEnforceInternalFids.includes(threadDetails?.forum_id)
 
   const initQuery = (threadChanged?: boolean) => {
     const authorId = searchParams.get('authorid')
@@ -223,8 +251,14 @@ function Thread() {
   const handlePageChange = (_: React.ChangeEvent<unknown>, page: number) =>
     setSearchParams(searchParamsAssign(searchParams, { page }))
 
+  useWatermark({ text: state.user.uid.toString() })
+
+  const hideSidebar = useMediaQuery('(max-width: 1000px)')
+  const narrowView = useMediaQuery('(max-width: 800px)')
+  const thinView = useMediaQuery('(max-width: 560px)')
+
   return (
-    <Stack direction="row">
+    <Stack direction="row" alignItems="flex-start">
       <Box className="flex-1" minWidth="1em">
         {isError ? (
           <Error error={error} onRefresh={refetch} />
@@ -239,7 +273,8 @@ function Thread() {
               ? info?.rows.map((item, index) => {
                   return (
                     <Box
-                      className="mb-4 rounded-lg shadow-lg"
+                      className="rounded-lg shadow-lg"
+                      mb={thinView ? 1 : 1.75}
                       sx={(theme) => ({
                         backgroundColor: theme.palette.background.paper,
                       })}
@@ -247,8 +282,17 @@ function Thread() {
                     >
                       <section
                         id={`post-${item.post_id}`}
-                        css={scrollAnchorCss}
+                        css={{ ...scrollAnchorCss, position: 'relative' }}
+                        onCopy={
+                          isInternalEnforced
+                            ? (e) => e.preventDefault() // Maybe show some prompt on copy
+                            : undefined
+                        }
                       >
+                        {!!item.is_first && item.position == 1 && (
+                          <ThreadStamp stamp={threadDetails?.stamp} />
+                        )}
+                        {index == 0 && isInternalEnforced && <InternalStamp />}
                         <Floor
                           post={item}
                           postDetails={postDetails[item.post_id]}
@@ -307,7 +351,7 @@ function Thread() {
                             </>
                           }
                         >
-                          <Box paddingRight="1.5em">
+                          <Box pr={narrowView ? undefined : '1.5em'}>
                             <PostRenderer post={item} />
                           </Box>
                         </Floor>
@@ -362,7 +406,7 @@ function Thread() {
           />
         )}
       </Box>
-      <Aside />
+      {!hideSidebar && <Aside />}
     </Stack>
   )
 }

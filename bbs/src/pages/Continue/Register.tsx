@@ -10,9 +10,8 @@ import {
   register,
 } from '@/apis/auth'
 import Error from '@/components/Error'
-import Link from '@/components/Link'
-import { isIdasRelease } from '@/utils/releaseMode'
-import { gotoIdas } from '@/utils/routes'
+import { RegisterContent } from '@/components/Login/Register'
+import { isIdasRelease, isPreviewRelease } from '@/utils/releaseMode'
 import { persistedStates } from '@/utils/storage'
 
 import CommonLayout from './CommonLayout'
@@ -80,11 +79,13 @@ export const RegisterForm = ({
   }
   const validateEmail = () => {
     const email = getFormField('email')
-    setEmailError(
-      email.match(/^[\w\-.]+@([\w-]+\.)+[\w-]{2,}$/)
-        ? ''
-        : '请输入有效的邮箱地址。'
-    )
+    if (email.length > 64) {
+      setEmailError('邮箱地址太长。')
+    } else if (email.match(/^[\w\-.]+@([\w-]+\.)+[\w-]{2,}$/)) {
+      setEmailError('')
+    } else {
+      setEmailError('请输入有效的邮箱地址。')
+    }
   }
   const handleRegister = async () => {
     if (!formRef.current) {
@@ -114,7 +115,11 @@ export const RegisterForm = ({
     }
     if (result) {
       persistedStates.authorizationHeader = result.authorization
-      navigate(idasResult.continue, { replace: true })
+      if (window.innerWidth < 750) {
+        navigate(idasResult.continue, { replace: true })
+      } else {
+        location.href = '/'
+      }
     }
   }
   return (
@@ -179,7 +184,7 @@ export const RegisterForm = ({
             <Button variant="contained" onClick={handleRegister}>
               立即注册
             </Button>
-            {!idasResult.users && !isIdasRelease && (
+            {!idasResult.users && !isIdasRelease && !isPreviewRelease && (
               <Button
                 variant="outlined"
                 sx={{ ml: 2 }}
@@ -189,7 +194,7 @@ export const RegisterForm = ({
               </Button>
             )}
           </Stack>
-          {registerError ? <Error error={registerError} /> : <></>}
+          {registerError ? <Error error={registerError} small /> : <></>}
         </td>
       </tr>
     </CommonForm>
@@ -201,32 +206,7 @@ export const RegisterHome = () => (
     <DialogContent sx={{ p: 0 }}>
       <CommonLayout>
         <Stack pl={2} pr={4}>
-          <Typography variant="signinTitle">欢迎来到清水河畔！</Typography>
-          <Typography variant="h6" textAlign="justify" my={3}>
-            清水河畔属于高校官方论坛，账号注册时必须进行实名关联。
-            <br />
-            点击以下按钮，使用学号与网上服务大厅密码登录与授权后继续注册：
-          </Typography>
-          <Stack direction="row" justifyContent="center">
-            <Button
-              variant="contained"
-              sx={{ fontSize: 20, px: 5, py: 1.5 }}
-              onClick={() => gotoIdas({ mode: 'register' })}
-            >
-              进入统一身份认证平台
-            </Button>
-          </Stack>
-          <Stack direction="row" justifyContent="flex-end" mt={3}>
-            <Link
-              external
-              to="/member.php?mod=register&forceold=1"
-              target="_blank"
-              underline="hover"
-              sx={{ color: '#ccc' }}
-            >
-              返回旧版
-            </Link>
-          </Stack>
+          <RegisterContent />
         </Stack>
       </CommonLayout>
     </DialogContent>

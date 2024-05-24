@@ -122,9 +122,7 @@ export type UserInfo = {
   last_login_at: number
 }
 
-export type ThreadList = {
-  total: number
-  rows?: Array<Thread>
+export type ThreadList = GenericList<Thread> & {
   forum?: ForumDetails
 }
 
@@ -331,6 +329,7 @@ export type GlobalStat = {
     uid: number
     username: string
   }
+  online_users?: number
 }
 
 export type TopListKey =
@@ -345,8 +344,22 @@ export type TopList = {
   [id in TopListKey]?: TopListThread[]
 }
 
+export const kAnnouncementSimple = 1
+
+export type Announcement = {
+  kind: number
+  title: string
+  summary?: string
+  href?: string
+  start_time?: number
+  end_time?: number
+  highlight_color?: string
+  dark_highlight_color?: string
+}
+
 export type IndexData = {
   global_stat?: GlobalStat
+  announcement?: Announcement[]
   forum_list?: Forum[]
   top_list?: TopList
 }

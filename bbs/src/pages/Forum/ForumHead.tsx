@@ -1,5 +1,3 @@
-import React, { useState } from 'react'
-
 import { ExpandMore } from '@mui/icons-material'
 import {
   Accordion,
@@ -9,6 +7,7 @@ import {
   Divider,
   Stack,
   Typography,
+  useMediaQuery,
 } from '@mui/material'
 
 import { ForumDetails } from '@/common/interfaces/forum'
@@ -22,8 +21,7 @@ type HeadProps = {
 }
 
 const Head = ({ data }: HeadProps) => {
-  const [isHeadOpen, setHeadOpen] = useState(true)
-  const moderators = data?.moderators || []
+  const thinView = useMediaQuery('(max-width: 560px)')
   return (
     <>
       <Accordion defaultExpanded disableGutters>
@@ -59,27 +57,34 @@ const Head = ({ data }: HeadProps) => {
               </Stack>
             </Stack>
             <Stack direction="row">
-              {moderators.length > 0 && <Typography>版主：</Typography>}
-              <Separated
-                separator={<Typography marginRight="0.35em">,</Typography>}
-              >
-                {moderators.map((moderator, index) => (
-                  <Link
-                    key={index}
-                    color="inherit"
-                    variant="subtitle2"
-                    to={pages.user({ username: moderator })}
+              {!!data?.moderators?.length && (
+                <>
+                  <Typography>版主：</Typography>
+                  <Separated
+                    separator={<Typography marginRight="0.35em">,</Typography>}
                   >
-                    {moderator}
-                  </Link>
-                ))}
-              </Separated>
+                    {data.moderators.map((moderator, index) => (
+                      <Link
+                        key={index}
+                        color="inherit"
+                        variant="subtitle2"
+                        to={pages.user({ username: moderator })}
+                      >
+                        {moderator}
+                      </Link>
+                    ))}
+                  </Separated>
+                </>
+              )}
             </Stack>
           </Box>
         </AccordionSummary>
         {!!data?.announcement && (
-          <AccordionDetails>
-            <UserHtmlRenderer html={data?.announcement} />
+          <AccordionDetails sx={thinView ? { px: 1 } : undefined}>
+            <UserHtmlRenderer
+              html={data?.announcement}
+              normalizeLegacyFontSize
+            />
           </AccordionDetails>
         )}
       </Accordion>

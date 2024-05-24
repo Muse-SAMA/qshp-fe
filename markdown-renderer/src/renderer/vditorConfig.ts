@@ -1,8 +1,10 @@
+import DOMPurify from 'dompurify'
+
 import { customRenderers } from './renderer'
 import { RenderMode, VditorContext } from './types'
 
 export const common = {
-  cdn: '/third_party/vditor-patched-0.2',
+  cdn: '/third_party/vditor-patched-0.3',
 }
 export const commonEmojiPath = {
   emojiPath: `${common.cdn}/dist/images/emoji`,
@@ -28,4 +30,5 @@ export const getPreviewOptions = (
   ...previewCommon(mode),
   ...commonEmojiPath,
   renderers: customRenderers('Preview', context),
+  transform: (html) => DOMPurify.sanitize(html),
 })

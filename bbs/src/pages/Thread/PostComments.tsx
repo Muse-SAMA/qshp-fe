@@ -3,12 +3,20 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 
 import { Sms } from '@mui/icons-material'
-import { Box, Pagination, Skeleton, Typography } from '@mui/material'
+import {
+  Box,
+  Pagination,
+  Skeleton,
+  Typography,
+  useMediaQuery,
+} from '@mui/material'
 
 import { getPostDetails } from '@/apis/thread'
 import { PostFloor } from '@/common/interfaces/response'
 import Avatar from '@/components/Avatar'
 import Link from '@/components/Link'
+import { UserHtmlRenderer } from '@/components/RichText'
+import bbcode2html from '@/utils/bbcode/bbcode'
 import { chineseTime } from '@/utils/dayjs'
 import { pages } from '@/utils/routes'
 
@@ -53,6 +61,9 @@ const PostComments = ({
       return result
     },
   })
+
+  const thinView = useMediaQuery('(max-width: 560px)')
+
   return (
     <PostExtraDetailsAccordian Icon={Sms} title="点评">
       {(isLoading || isPlaceholderData) &&
@@ -64,7 +75,7 @@ const PostComments = ({
               time = ' ' + time
             }
             return (
-              <Box key={comment.id} my={2}>
+              <Box key={comment.id} my={thinView ? 1 : 2}>
                 <Link
                   to={pages.user({ uid: comment.author_id })}
                   underline="hover"
@@ -84,16 +95,18 @@ const PostComments = ({
                       verticalAlign: 'middle',
                       fontWeight: 'bold',
                       display: 'inline-block',
-                      minWidth: '8em',
+                      minWidth: thinView ? undefined : '8em',
                       textDecoration: 'inherit',
                     }}
                   >
                     {comment.author}
                   </Typography>
                 </Link>
-                <span style={{ verticalAlign: 'middle' }}>
-                  {comment.message}
-                </span>
+                <UserHtmlRenderer
+                  Component="span"
+                  style={{ verticalAlign: 'middle' }}
+                  html={bbcode2html(comment.message, { mode: 'postcomment' })}
+                />
                 <span
                   className="text-sm text-slate-300"
                   style={{

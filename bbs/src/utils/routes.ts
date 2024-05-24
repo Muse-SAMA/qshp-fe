@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react'
-import { Params, useLocation, useMatches } from 'react-router-dom'
+import { Params, useMatches } from 'react-router-dom'
 
 import { ContinueMode } from '@/common/types/idas'
 
 import siteRoot from './siteRoot'
 
 export const useActiveRoute = () => {
-  const location = useLocation()
   const matches = useMatches()
   const [activeRoute, setActiveRoute] = useState<{
     id: string
@@ -17,7 +16,7 @@ export const useActiveRoute = () => {
   } | null>(null)
   useEffect(() => {
     setActiveRoute(matches.length > 0 ? matches[matches.length - 1] : null)
-  }, [location])
+  }, [matches])
   return activeRoute
 }
 
@@ -136,8 +135,13 @@ export const pages = {
         ...(params?.keyword && { q: params.keyword }),
         ...(params?.author && { author: params.author }),
         ...(params?.digest && { digest: '1' }),
-        type: 'post',
       })
+    ),
+
+  searchUsers: (params: { keyword: string }) =>
+    withSearchAndHash(
+      `/search/user`,
+      new URLSearchParams({ q: params.keyword })
     ),
 }
 

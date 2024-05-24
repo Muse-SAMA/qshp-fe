@@ -1,8 +1,13 @@
 import { ForumDetails } from '@/common/interfaces/forum'
+import { Announcement } from '@/common/interfaces/response'
 
 import { guestUser } from '..'
 
+let uniqueKey = 0
+const newUniqueKey = () => ++uniqueKey
+
 export type UserState = {
+  uninitialized?: boolean
   uid: number
   username: string
   new_pm?: number // This field is not yet available while Discuz! is still running
@@ -28,6 +33,20 @@ type GlobalDialogState = {
   imageDetails?: string
 }
 
+type GlobalSnackbarState = {
+  message: string
+  severity?: 'success' | 'warning' | 'error'
+  key: number
+}
+
+type TopListViewState = {
+  open?: boolean
+  mounted?: boolean
+  alwaysOpen?: boolean
+  noTransition?: boolean
+  manuallyOpened?: boolean
+}
+
 export type State = {
   drawer: boolean
   user: UserState
@@ -35,7 +54,10 @@ export type State = {
   activeForum?: ForumDetails
   activeThread?: ThreadBreadcumbEntry
   globalDialog?: GlobalDialogState
+  globalSnackbar?: GlobalSnackbarState
+  toplistView?: TopListViewState
   theme: 'light' | 'dark'
+  announcement?: Announcement[]
 }
 
 export interface StateAction {
@@ -110,6 +132,39 @@ export const stateReducer = (state: State, action: StateAction): State => {
       return {
         ...state,
         globalDialog: undefined,
+      }
+    case 'open toplist':
+      return {
+        ...state,
+        toplistView: {
+          ...action.payload,
+          open: true,
+          mounted: true,
+        },
+      }
+    case 'close toplist':
+      return {
+        ...state,
+        toplistView: {
+          ...state.toplistView,
+          ...action.payload,
+          open: false,
+        },
+      }
+    case 'open snackbar':
+      return {
+        ...state,
+        globalSnackbar: { ...action.payload, key: newUniqueKey() },
+      }
+    case 'close snackbar':
+      return {
+        ...state,
+        globalSnackbar: undefined,
+      }
+    case 'set announcement':
+      return {
+        ...state,
+        announcement: action.payload,
       }
     default:
       return state

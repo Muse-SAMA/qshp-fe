@@ -1,5 +1,6 @@
 import React from 'react'
 
+import { BurstMode } from '@mui/icons-material'
 import { Grid, Stack, SxProps, Theme, Typography } from '@mui/material'
 
 import { AttachmentSummary } from '@/common/interfaces/base'
@@ -48,7 +49,7 @@ export const SummaryAttachmentMore = ({ threadId }: { threadId: number }) => (
         alignItems: 'center',
       }}
     >
-      ...
+      <BurstMode />
     </Link>
   </SummaryAttachmentGrid>
 )
@@ -61,7 +62,11 @@ export const SummaryAttachmentGrid = ({
   sx?: SxProps<Theme>
   onClick?: () => void
 }) => (
-  <Grid m={0.5} sx={{ cursor: 'pointer', ...sx }} onClick={onClick}>
+  <Grid
+    m={0.5}
+    sx={{ cursor: 'pointer', borderRadius: '4px', overflow: 'hidden', ...sx }}
+    onClick={onClick}
+  >
     <Stack
       justifyContent="center"
       alignItems="center"
@@ -72,19 +77,31 @@ export const SummaryAttachmentGrid = ({
   </Grid>
 )
 
-const Summary = ({
+type SummaryItem = Pick<
+  ThreadBasics,
+  'thread_id' | 'summary' | 'summary_attachments'
+>
+
+export const SummaryText = ({
   item,
+  sx,
 }: {
-  item: Pick<ThreadBasics, 'thread_id' | 'summary' | 'summary_attachments'>
-}) => {
+  item: SummaryItem
+  sx?: SxProps<Theme>
+}) => (
+  <>
+    {item.summary && (
+      <Typography variant="threadItemSummary" mb={0.5} sx={sx}>
+        {item.summary}
+      </Typography>
+    )}
+  </>
+)
+
+export const SummaryAttachments = ({ item }: { item: SummaryItem }) => {
   const { dispatch } = useAppState()
   return (
     <>
-      {item.summary && (
-        <Typography variant="threadItemSummary" mb={0.5}>
-          {item.summary}
-        </Typography>
-      )}
       {!!item.summary_attachments?.length && (
         <Grid container>
           {item.summary_attachments
@@ -110,6 +127,15 @@ const Summary = ({
           )}
         </Grid>
       )}
+    </>
+  )
+}
+
+const Summary = ({ item }: { item: SummaryItem }) => {
+  return (
+    <>
+      <SummaryText item={item} />
+      <SummaryAttachments item={item} />
     </>
   )
 }

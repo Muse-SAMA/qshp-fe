@@ -1,12 +1,13 @@
-import React from 'react'
-
-import { Poll } from '@mui/icons-material'
+import { Face5, Poll, Textsms } from '@mui/icons-material'
 import {
   Box,
   Divider,
   Chip as MuiChip,
   Stack,
+  SxProps,
+  Theme,
   Typography,
+  useMediaQuery,
   useTheme,
 } from '@mui/material'
 
@@ -26,7 +27,7 @@ import Link from '../Link'
 import Separated from '../Separated'
 import ForumSmall from '../icons/ForumSmall'
 import ReplySmall from '../icons/ReplySmall'
-import Summary from './Summary'
+import { SummaryAttachments, SummaryText } from './Summary'
 
 const formatNumber = (num: number) => {
   if (num >= 1000 && num < 1000000) {
@@ -63,163 +64,177 @@ const ThreadItem = ({
   ignoreThreadHighlight,
 }: ThreadItemProps) => {
   const theme = useTheme()
+  const narrowView = useMediaQuery('(max-width: 750px)')
+  const thinView = useMediaQuery('(max-width: 560px)')
 
   return (
     <Box className="p-0.5">
       <Box
-        className="p-4"
+        p={thinView ? 1 : 1.75}
         style={{
           backgroundColor: theme.palette.background.paper,
         }}
       >
+        {narrowView && !hideThreadAuthor && (
+          <Stack direction="row" justifyContent="space-between">
+            <Stack direction="row" mb={1}>
+              <ThreadAvatar
+                thread={{ author_id: data.author_id, author: data.author }}
+                small
+              />
+              <ThreadAuthor thread={data} twoLines />
+            </Stack>
+            <ThreadStatSmall thread={data} />
+          </Stack>
+        )}
         <Stack direction="row">
-          {!hideThreadAuthor && data.author_id !== undefined && (
-            <Box sx={{ mr: 2 }}>
-              <Link to={data.author_id ? `/user/${data.author_id}` : undefined}>
-                <Avatar
-                  alt={data.author}
-                  uid={data.author_id}
-                  size={showSummary ? 40 : 48}
-                />
-              </Link>
-            </Box>
+          {!narrowView && !hideThreadAuthor && (
+            <ThreadAvatar
+              thread={{ author_id: data.author_id, author: data.author }}
+              small={showSummary}
+            />
           )}
-          <Box className="flex-1" mr={1.5}>
-            <Stack
-              justifyContent="space-between"
-              direction="column"
-              sx={{ minWidth: 350 }}
-            >
-              <Stack direction="row" alignItems="center" mb={0.5}>
-                {!!data.type_id &&
-                  forumDetails?.thread_types_map &&
-                  forumDetails?.thread_types_map[data.type_id] && (
-                    <Chip
-                      text={forumDetails?.thread_types_map[data.type_id].name}
+          <Box flexGrow={1}>
+            <Box className="flex-1">
+              <Stack direction="row" justifyContent="space-between">
+                <Stack justifyContent="space-between" direction="column">
+                  <Box mb={0.5}>
+                    {!!data.type_id &&
+                      forumDetails?.thread_types_map &&
+                      forumDetails?.thread_types_map[data.type_id] && (
+                        <Chip
+                          text={
+                            forumDetails?.thread_types_map[data.type_id].name
+                          }
+                          sx={{ flexShrink: 0, verticalAlign: 'middle' }}
+                        />
+                      )}
+                    <Link
+                      to={pages.thread(data.thread_id)}
+                      color="inherit"
+                      underline="hover"
+                    >
+                      <Typography
+                        textAlign="justify"
+                        variant="threadItemSubject"
+                        color={ignoreThreadHighlight ? 'primary' : undefined}
+                        sx={{ verticalAlign: 'middle' }}
+                        style={
+                          ignoreThreadHighlight
+                            ? undefined
+                            : {
+                                color: data.highlight_color,
+                                backgroundColor: data.highlight_bgcolor,
+                                fontWeight: data.highlight_bold
+                                  ? 'bold'
+                                  : undefined,
+                                fontStyle: data.highlight_italic
+                                  ? 'italic'
+                                  : undefined,
+                                textDecoration: data.highlight_underline
+                                  ? 'underline'
+                                  : undefined,
+                              }
+                        }
+                      >
+                        {data.subject}
+                      </Typography>
+                      <ThreadExtraLabels thread={data} />
+                    </Link>
+                  </Box>
+                  <ThreadRepliesOrComments
+                    threadId={data.thread_id}
+                    replies={replies}
+                  />
+                  {showSummary && (
+                    <SummaryText
+                      item={data}
+                      sx={narrowView ? { opacity: 0.9 } : undefined}
                     />
                   )}
-                <Link
-                  to={pages.thread(data.thread_id)}
-                  color="inherit"
-                  underline="hover"
-                  className="line-clamp-2"
-                >
-                  <Typography
-                    textAlign="justify"
-                    variant="threadItemSubject"
-                    color={ignoreThreadHighlight ? 'primary' : undefined}
-                    style={
-                      ignoreThreadHighlight
-                        ? undefined
-                        : {
-                            color: data.highlight_color,
-                            backgroundColor: data.highlight_bgcolor,
-                            fontWeight: data.highlight_bold
-                              ? 'bold'
-                              : undefined,
-                            fontStyle: data.highlight_italic
-                              ? 'italic'
-                              : undefined,
-                            textDecoration: data.highlight_underline
-                              ? 'underline'
-                              : undefined,
-                          }
-                    }
-                  >
-                    {data.subject}
-                  </Typography>
-                </Link>
-                <ThreadExtraLabels thread={data} />
-              </Stack>
-              <ThreadRepliesOrComments
-                threadId={data.thread_id}
-                replies={replies}
-              />
-              {showSummary && <Summary item={data} />}
-              <ThreadAuthor thread={data} hideThreadAuthor={hideThreadAuthor} />
-            </Stack>
-          </Box>
-          <Stack justifyContent="space-between">
-            <Stack direction="row" alignItems="center">
-              {data.forum_name && (
-                <>
-                  <Box flexGrow={1} />
-                  <Link
-                    to={pages.forum(data.forum_id)}
-                    underline="hover"
-                    color=""
-                    variant="threadItemForum"
-                    sx={{
-                      '&:hover': {
-                        color: '#2175F3',
-                        'svg path.fill': {
-                          fill: '#2175F3',
-                        },
-                        'svg path.stroke': {
-                          stroke: '#2175F3',
-                        },
-                      },
-                    }}
-                  >
-                    <Stack direction="row" alignItems="center">
-                      <ForumSmall
-                        color={theme.typography.threadItemForum.color}
+                </Stack>
+                <Stack justifyContent="space-between" flexShrink={0} ml={0.5}>
+                  <Stack direction="row" alignItems="center">
+                    {data.forum_name && (
+                      <>
+                        <Box flexGrow={1} />
+                        <Link
+                          to={pages.forum(data.forum_id)}
+                          underline="hover"
+                          color=""
+                          variant="threadItemForum"
+                          sx={{
+                            '&:hover': {
+                              color: '#2175F3',
+                              'svg path.fill': {
+                                fill: '#2175F3',
+                              },
+                              'svg path.stroke': {
+                                stroke: '#2175F3',
+                              },
+                            },
+                          }}
+                        >
+                          <Stack direction="row" alignItems="center">
+                            <ForumSmall
+                              color={theme.typography.threadItemForum.color}
+                            />
+                            <Typography ml={0.5} mr={2}>
+                              {data.forum_name}
+                            </Typography>
+                          </Stack>
+                        </Link>
+                      </>
+                    )}
+                    {!narrowView && (
+                      <ThreadStat
+                        thread={data}
+                        sx={data.forum_name ? { minWidth: '14em' } : undefined}
                       />
-                      <Typography ml={0.5} mr={2}>
-                        {data.forum_name}
-                      </Typography>
-                    </Stack>
-                  </Link>
-                </>
-              )}
-              <Stack
-                direction="row"
-                justifyContent="flex-end"
-                flexGrow={1}
-                minWidth={data.forum_name ? '14em' : undefined}
-              >
-                <Typography variant="threadItemStat">
-                  <Separated
-                    separator={
-                      <Typography component="span" mx={0.75}>
-                        ·
-                      </Typography>
-                    }
-                  >
-                    <>查看：{formatNumber(data.views)}</>
-                    <>回复：{formatNumber(data.replies)}</>
-                  </Separated>
-                </Typography>
+                    )}
+                  </Stack>
+                </Stack>
               </Stack>
-            </Stack>
-            <Stack direction="row" justifyContent="flex-end">
-              <Typography variant="threadItemAuthor">
-                <Separated
-                  separator={
-                    <Typography component="span" mx={0.75}>
-                      ·
-                    </Typography>
-                  }
-                >
-                  <>
-                    {`最新回复：`}
-                    <Link
-                      color="inherit"
-                      underline={data.last_poster ? 'hover' : 'none'}
-                      to={
-                        data.last_poster
-                          ? pages.user({ username: data.last_poster })
-                          : undefined
+              {showSummary && <SummaryAttachments item={data} />}
+            </Box>
+            <Stack direction="row" justifyContent="space-between">
+              {!narrowView && (
+                <ThreadAuthor
+                  thread={data}
+                  hideThreadAuthor={hideThreadAuthor}
+                />
+              )}
+              <Stack>
+                <Stack direction="row" justifyContent="flex-end">
+                  <Typography variant="threadItemAuthor">
+                    <Separated
+                      separator={
+                        <Typography component="span" mx={0.75}>
+                          ·
+                        </Typography>
                       }
                     >
-                      {data.last_poster || '匿名'}
-                    </Link>
-                  </>
-                  <>{chineseTime(data.last_post * 1000)}</>
-                </Separated>
-              </Typography>
+                      <>
+                        {`最新回复：`}
+                        <Link
+                          color="inherit"
+                          underline={data.last_poster ? 'hover' : 'none'}
+                          to={
+                            data.last_poster
+                              ? pages.user({ username: data.last_poster })
+                              : undefined
+                          }
+                        >
+                          {data.last_poster || '匿名'}
+                        </Link>
+                      </>
+                      <>{chineseTime(data.last_post * 1000)}</>
+                    </Separated>
+                  </Typography>
+                </Stack>
+              </Stack>
             </Stack>
-          </Stack>
+          </Box>
         </Stack>
       </Box>
       <Divider variant="fullWidth" style={{ backgroundColor: '#CAC4D0' }} />
@@ -278,6 +293,73 @@ export const ThreadItemLite = ({
   )
 }
 
+const ThreadAvatar = ({
+  thread,
+  small,
+}: {
+  thread: Partial<Pick<Thread, 'author_id' | 'author'>>
+  small?: boolean
+}) => {
+  if (thread.author_id == undefined) {
+    return <></>
+  }
+  return (
+    <Box sx={{ mr: 2 }}>
+      <Link to={thread.author_id ? `/user/${thread.author_id}` : undefined}>
+        <Avatar
+          alt={thread.author}
+          uid={thread.author_id}
+          size={small ? 40 : 48}
+        />
+      </Link>
+    </Box>
+  )
+}
+
+const ThreadStat = ({
+  thread,
+  sx,
+}: {
+  thread: Pick<Thread, 'views' | 'replies'>
+  sx?: SxProps<Theme>
+}) => (
+  <Stack direction="row" justifyContent="flex-end" flexGrow={1} sx={sx}>
+    <Typography variant="threadItemStat">
+      <Separated
+        separator={
+          <Typography component="span" mx={0.75}>
+            ·
+          </Typography>
+        }
+      >
+        <>查看：{formatNumber(thread.views)}</>
+        <>回复：{formatNumber(thread.replies)}</>
+      </Separated>
+    </Typography>
+  </Stack>
+)
+
+const ThreadStatSmall = ({
+  thread,
+  sx,
+}: {
+  thread: Pick<Thread, 'views' | 'replies'>
+  sx?: SxProps<Theme>
+}) => (
+  <Typography variant="threadItemAuthor">
+    <Stack alignItems="flex-end">
+      <Stack direction="row" alignItems="center">
+        {thread.views}
+        <Face5 sx={{ ml: 0.5, fontSize: '0.95em' }} />
+      </Stack>
+      <Stack direction="row" alignItems="center">
+        {thread.replies}
+        <Textsms sx={{ ml: 0.5, fontSize: '0.95em' }} />
+      </Stack>
+    </Stack>
+  </Typography>
+)
+
 const ThreadExtraLabels = ({ thread }: { thread: Partial<Thread> }) => (
   <>
     {!!thread.reply_credit_remaining_amount && (
@@ -291,23 +373,42 @@ const ThreadExtraLabels = ({ thread }: { thread: Partial<Thread> }) => (
           </>
         }
         variant="threadItemHot"
-        sx={{ mx: 0.5 }}
+        sx={{ mx: 0.5, verticalAlign: 'middle' }}
       />
     )}
     {thread.special == 1 && (
-      <Poll htmlColor="#FA541C" sx={{ width: '0.85em', mx: '0.25em' }} />
+      <Poll
+        htmlColor="#FA541C"
+        sx={{ width: '0.85em', mx: '0.25em', verticalAlign: 'middle' }}
+      />
     )}
     {!!thread.digest && (
-      <MuiChip label="精华" variant="threadItemDigest" sx={{ mx: 0.5 }} />
+      <MuiChip
+        label="精华"
+        variant="threadItemDigest"
+        sx={{ mx: 0.5, verticalAlign: 'middle' }}
+      />
     )}
     {(thread.stamp == 3 || thread.icon == 12) && (
-      <MuiChip label="优秀" variant="threadItemExcellent" sx={{ mx: 0.5 }} />
+      <MuiChip
+        label="优秀"
+        variant="threadItemExcellent"
+        sx={{ mx: 0.5, verticalAlign: 'middle' }}
+      />
     )}
     {(thread.stamp == 5 || thread.icon == 14) && (
-      <MuiChip label="推荐" variant="threadItemRecommended" sx={{ mx: 0.5 }} />
+      <MuiChip
+        label="推荐"
+        variant="threadItemRecommended"
+        sx={{ mx: 0.5, verticalAlign: 'middle' }}
+      />
     )}
     {thread.icon == 20 && (
-      <MuiChip label="新人" variant="threadItemFreshman" sx={{ mx: 0.5 }} />
+      <MuiChip
+        label="新人"
+        variant="threadItemFreshman"
+        sx={{ mx: 0.5, verticalAlign: 'middle' }}
+      />
     )}
   </>
 )
@@ -315,9 +416,11 @@ const ThreadExtraLabels = ({ thread }: { thread: Partial<Thread> }) => (
 const ThreadAuthor = ({
   thread,
   hideThreadAuthor,
+  twoLines,
 }: {
   thread: Partial<Thread> & Required<Pick<Thread, 'dateline'>>
   hideThreadAuthor?: boolean
+  twoLines?: boolean
 }) => {
   const time = <>{chineseTime(thread.dateline * 1000)}</>
   return (
@@ -328,9 +431,13 @@ const ThreadAuthor = ({
         ) : (
           <Separated
             separator={
-              <Typography component="span" mx={0.75}>
-                ·
-              </Typography>
+              twoLines ? (
+                <br />
+              ) : (
+                <Typography component="span" mx={0.75}>
+                  ·
+                </Typography>
+              )
             }
           >
             <Link

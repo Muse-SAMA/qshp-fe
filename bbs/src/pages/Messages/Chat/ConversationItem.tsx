@@ -16,7 +16,9 @@ import Avatar from '@/components/Avatar'
 import Link from '@/components/Link'
 import { useAppState } from '@/states'
 import { chineseTime } from '@/utils/dayjs'
+import { isPreviewRelease } from '@/utils/releaseMode'
 import { pages } from '@/utils/routes'
+import siteRoot from '@/utils/siteRoot'
 
 type ConversationItemProps = {
   chat: ChatConversation
@@ -26,6 +28,7 @@ type ConversationItemProps = {
   showOptSelect: boolean
   checked: boolean
   onCheckboxChange: (isChecked: boolean, id: number) => void
+  small?: boolean
 }
 
 const ConversationItem = forwardRef<
@@ -37,6 +40,7 @@ const ConversationItem = forwardRef<
     selected,
     lite,
     summary,
+    small,
     showOptSelect,
     checked,
     onCheckboxChange,
@@ -73,8 +77,19 @@ const ConversationItem = forwardRef<
     >
       <ListItemButton
         selected={selected || chat.unread}
-        component={Link} // 使用 Link 组件
-        to={pages.chat(chat.conversation_id)} // 跳转链接到对应聊天页面
+        component={Link}
+        to={
+          isPreviewRelease
+            ? `${siteRoot}/home.php?mod=space&do=pm&subop=view&${
+                chat.to_uid
+                  ? `touid=${chat.to_uid}`
+                  : `plid=${chat.conversation_id}&type=1`
+              }`
+            : pages.chat(chat.conversation_id)
+        }
+        external={isPreviewRelease}
+        target={isPreviewRelease ? '_blank' : undefined}
+        sx={small ? { px: 1.25 } : undefined}
       >
         <Stack direction="row" {...liteProps}>
           <ChatAvatar chat={chat} summary={summary} />

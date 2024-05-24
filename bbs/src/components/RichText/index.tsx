@@ -1,5 +1,3 @@
-import Vditor from 'vditor'
-
 import React, { useEffect, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -9,18 +7,18 @@ import {
   getContrastRatio,
   getLuminance,
   lighten,
+  useMediaQuery,
 } from '@mui/material'
 
 import { Attachment } from '@/common/interfaces/base'
 import { PostFloor } from '@/common/interfaces/response'
-import { getPreviewOptions } from '@/components/RichText/vditorConfig'
 import { useAppState } from '@/states'
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import bbcode2html from '@/utils/bbcode/bbcode'
+import bbcode2html, { FontSizeVariant } from '@/utils/bbcode/bbcode'
 
+import '../../../../markdown-renderer/src/renderer/richtext.css'
+import { getPreviewOptions } from '../../../../markdown-renderer/src/renderer/vditorConfig'
 import { onClickHandler } from './eventHandlers'
-import './richtext.css'
+import './legacy.css'
 import { transformUserHtml } from './transform'
 
 const kAuthoredColor = 'authoredColor'
@@ -28,13 +26,21 @@ const kColorManipulated = 'colorManipulated'
 
 export const UserHtmlRenderer = ({
   html,
+  // TODO: Maybe render orphan attachment with React?
+  orphanAttachments,
   style,
+  normalizeLegacyFontSize,
+  Component,
 }: {
   html: string
+  orphanAttachments?: Attachment[]
   style?: React.CSSProperties
+  normalizeLegacyFontSize?: boolean
+  Component?: React.ElementType
 }) => {
+  const Container = Component ?? 'div'
   const { state } = useAppState()
-  const contentRef = useRef<HTMLDivElement>(null)
+  const contentRef = useRef<HTMLElement>(null)
   const findParentBackgroundColor = (
     el: HTMLElement,
     upTo: HTMLElement | null
@@ -117,32 +123,60 @@ export const UserHtmlRenderer = ({
     }
   }, [state.theme])
 
-  const processedHtml = useMemo(() => transformUserHtml(html), [html])
+  const sizeVariant = useMediaQuery('(max-width: 640px)') ? 'small' : 'default'
+  const processedHtml = useMemo(
+    () => transformUserHtml(html, normalizeLegacyFontSize, sizeVariant),
+    [html, sizeVariant]
+  )
   const navigate = useNavigate()
   const { dispatch } = useAppState()
   return (
-    <div
+    <Container
       ref={contentRef}
       className={`rich-text-content rich-text-content-legacy rich-text-theme-${state.theme}`}
       style={style}
       dangerouslySetInnerHTML={{
         __html: processedHtml,
       }}
-      onClickCapture={(e) => onClickHandler(e, navigate, dispatch)}
-    ></div>
+      onClickCapture={(e: React.MouseEvent<HTMLElement>) =>
+        onClickHandler(e, navigate, dispatch)
+      }
+    ></Container>
   )
 }
 
-const LegacyPostRenderer = ({ post }: { post: PostFloor }) => {
-  return (
-    <UserHtmlRenderer
-      html={bbcode2html(post.message, {
-        allowimgurl: true,
-        bbcodeoff: post.format != 0,
-        smileyoff: post.smileyoff,
-      })}
-    />
+type PickedPost = Pick<
+  PostFloor,
+  'format' | 'smileyoff' | 'post_id' | 'message' | 'attachments'
+>
+
+export const renderLegacyPostToDangerousHtml = (
+  post: PickedPost,
+  orphanAttachments?: Attachment[],
+  sizeVariant?: FontSizeVariant
+) =>
+  bbcode2html(
+    post.message,
+    {
+      bbcodeoff: post.format != 0,
+      smileyoff: !!post.smileyoff,
+      // TODO: legacyPhpwindAt: post.post_id >= ???
+      legacyPhpwindAt: post.post_id <= 24681051,
+      legacyPhpwindCode: post.post_id <= 24681051,
+      sizeVariant,
+    },
+    post.attachments,
+    orphanAttachments
   )
+
+export const LegacyPostRenderer = ({ post }: { post: PickedPost }) => {
+  const orphanAttachments: Attachment[] = []
+  const html = renderLegacyPostToDangerousHtml(
+    post,
+    orphanAttachments,
+    useMediaQuery('(max-width: 640px)') ? 'small' : 'default'
+  )
+  return <UserHtmlRenderer html={html} orphanAttachments={orphanAttachments} />
 }
 
 const MarkdownPostRenderer = ({
@@ -155,14 +189,17 @@ const MarkdownPostRenderer = ({
   const { state } = useAppState()
   const el = useRef<HTMLDivElement>(null)
   useEffect(() => {
-    el.current &&
-      Vditor.preview(
-        el.current,
-        message,
-        getPreviewOptions(state.theme, {
-          attachments: attachments || [],
-        })
-      )
+    ;(async () => {
+      const Vditor = (await import('vditor')).default
+      el.current &&
+        Vditor.preview(
+          el.current,
+          message,
+          getPreviewOptions(state.theme, {
+            attachments: attachments || [],
+          })
+        )
+    })()
   }, [message])
   const navigate = useNavigate()
   const { dispatch } = useAppState()

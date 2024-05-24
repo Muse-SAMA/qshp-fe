@@ -5,8 +5,9 @@ import { List, ListItemButton, Paper, Stack } from '@mui/material'
 
 import { MessageCounts } from '@/common/interfaces/response'
 import Link from '@/components/Link'
-import StartConversation from '@/pages/Messages/Chat/StartConversation'
+import { isPreviewRelease } from '@/utils/releaseMode'
 import { pages, useActiveRoute } from '@/utils/routes'
+import siteRoot from '@/utils/siteRoot'
 
 //Navigation-Items of Messages
 const navItems = [
@@ -40,38 +41,31 @@ const Messages = () => {
   }
   return (
     <Stack direction="row" alignItems="flex-start" mt={2}>
-      <Stack
-        spacing={2}
-        direction="column"
-        sx={{ width: 180, mr: 4, flexGrow: 0, flexShrink: 0, elevation: 3 }}
-      >
-        {/*
-        still Navigation-Items of Messages
-        Paper: a card with shadow
-        margin-right: 4
-        do not grow or shrink
-      */}
-        <Paper
-          sx={{ width: 180, mr: 4, flexGrow: 0, flexShrink: 0, elevation: 3 }}
-        >
-          <List disablePadding>
-            {navItems.map((item, index) => (
-              <Link
-                underline="none"
-                color="inherit"
-                key={index}
-                to={pages.messages(item.id as MessageGroup)}
-              >
-                <ListItemButton selected={item.id == route?.id}>
-                  {item.text}
-                  {!!counts[item.id] && ` (${counts[item.id]})`}
-                </ListItemButton>
-              </Link>
-            ))}
-          </List>
-        </Paper>
-        <StartConversation />
-      </Stack>
+      <Paper sx={{ width: 180, mr: 4, flewGrow: 0, flexShrink: 0 }}>
+        <List disablePadding>
+          {navItems.map((item, index) => (
+            <Link
+              underline="none"
+              color="inherit"
+              key={index}
+              to={
+                isPreviewRelease && item.id == 'chat'
+                  ? `${siteRoot}/home.php?mod=space&do=pm`
+                  : pages.messages(item.id as MessageGroup)
+              }
+              external={isPreviewRelease && item.id == 'chat'}
+              target={
+                isPreviewRelease && item.id == 'chat' ? '_blank' : undefined
+              }
+            >
+              <ListItemButton selected={item.id == route?.id}>
+                {item.text}
+                {!!counts[item.id] && ` (${counts[item.id]})`}
+              </ListItemButton>
+            </Link>
+          ))}
+        </List>
+      </Paper>
       <Outlet context={{ setCount }} />
     </Stack>
   )

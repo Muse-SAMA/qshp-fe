@@ -22,6 +22,7 @@ import DigestAuthor from '@/components/Medals/DigestAuthor'
 import UserGroupIcon from '@/components/UserGroupIcon'
 import { useAppState } from '@/states'
 import { pages } from '@/utils/routes'
+import siteRoot from '@/utils/siteRoot'
 import { handleEnter } from '@/utils/tools'
 
 const UserStatEntry = ({
@@ -52,13 +53,7 @@ const UserCard = ({ userSummary }: { userSummary?: UserSummary }) => {
           minHeight: `calc(${avatarSize}px + ${theme.spacing(avatarM * 2)})`,
         })}
       >
-        <Box
-          m={avatarM}
-          position="absolute"
-          left={0}
-          top={0}
-          sx={{ backgroundColor: '#eee' }}
-        >
+        <Box m={avatarM} position="absolute" left={0} top={0}>
           {userSummary && (
             <Avatar
               alt={userSummary?.username}
@@ -68,6 +63,7 @@ const UserCard = ({ userSummary }: { userSummary?: UserSummary }) => {
               variant="rounded"
               sx={{
                 boxShadow: '4px 4px 12px rgba(0, 0, 0, 0.25)',
+                backgroundColor: '#eee',
               }}
             />
           )}
@@ -205,7 +201,15 @@ const UserCard = ({ userSummary }: { userSummary?: UserSummary }) => {
                 {userSummary &&
                   !userSummary.blocked &&
                   state.user.uid != userSummary.uid && (
-                    <Button variant="contained">开始私信</Button>
+                    <Button
+                      component={Link}
+                      variant="contained"
+                      to={`${siteRoot}/home.php?mod=space&do=pm&subop=view&touid=${userSummary.uid}#last`}
+                      external
+                      target="_blank"
+                    >
+                      开始私信
+                    </Button>
                   )}
               </Stack>
             </Stack>
