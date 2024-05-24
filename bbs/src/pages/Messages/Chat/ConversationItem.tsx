@@ -25,7 +25,7 @@ type ConversationItemProps = {
   summary?: boolean
   showOptSelect: boolean
   checked: boolean
-  onCheckboxChange: (isChecked: boolean) => void
+  onCheckboxChange: (isChecked: boolean, id: number) => void
 }
 
 const ConversationItem = forwardRef<
@@ -44,8 +44,7 @@ const ConversationItem = forwardRef<
   ref?
 ) {
   const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const isChecked = event.target.checked
-    onCheckboxChange(isChecked)
+    onCheckboxChange(event.target.checked, chat.conversation_id)
   }
 
   const liteProps = lite

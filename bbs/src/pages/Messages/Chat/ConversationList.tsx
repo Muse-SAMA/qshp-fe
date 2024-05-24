@@ -17,6 +17,7 @@ const ConversationList = ({
   lite,
   activeConversation,
   showOptSelect,
+  checkList,
   onCheckboxChange,
 }: {
   list: ChatConversation[]
@@ -24,7 +25,8 @@ const ConversationList = ({
   lite?: boolean
   activeConversation?: ChatConversation
   showOptSelect: boolean
-  onCheckboxChange: (isChecked: boolean) => void
+  checkList: Record<number, boolean>
+  onCheckboxChange: (isChecked: boolean, id: number) => void
 }) => {
   const [searchParams, setSearchParams] = useSearchParams()
   const activeRef = useRef<HTMLLIElement>(null)
@@ -42,6 +44,7 @@ const ConversationList = ({
             selected={chat == activeConversation}
             ref={chat == activeConversation ? activeRef : undefined}
             showOptSelect={showOptSelect}
+            checked={checkList[chat.conversation_id] || false}
             onCheckboxChange={onCheckboxChange}
           />
         ))}
@@ -55,6 +58,7 @@ const ConversationList = ({
             count={Math.ceil(
               (pagination.total || 1) / (pagination.page_size || 1)
             )}
+            // count={100}
             page={pagination.page}
             onChange={(_, page) =>
               setSearchParams(searchParamsAssign(searchParams, { page }))

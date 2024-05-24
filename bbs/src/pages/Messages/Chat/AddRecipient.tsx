@@ -1,8 +1,6 @@
 /* eslint-disable react/jsx-key */
 import { useState } from 'react'
 
-import CheckBoxIcon from '@mui/icons-material/CheckBox'
-import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank'
 import {
   Autocomplete,
   Chip,
@@ -11,11 +9,9 @@ import {
   TextField,
 } from '@mui/material'
 
-const icon = <CheckBoxOutlineBlankIcon fontSize="small" />
-const checkedIcon = <CheckBoxIcon fontSize="small" />
-
 export default function ChooseFriends() {
   const [selectedChips, setSelectedChips] = useState(0)
+
   return (
     <Stack>
       <Autocomplete
@@ -23,6 +19,7 @@ export default function ChooseFriends() {
         multiple
         disableCloseOnSelect
         freeSolo
+        filterSelectedOptions
         options={FriendList.map((option) => option.friendname)}
         renderTags={(value: readonly string[], getTagProps) => {
           setSelectedChips(value.length)

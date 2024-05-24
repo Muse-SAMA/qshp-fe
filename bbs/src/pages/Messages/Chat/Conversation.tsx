@@ -2,7 +2,6 @@ import { useQuery } from '@tanstack/react-query'
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useInView } from 'react-cool-inview'
-import { useNavigate } from 'react-router-dom'
 
 import { Send } from '@mui/icons-material'
 import KeyboardReturnIcon from '@mui/icons-material/KeyboardReturn'
@@ -43,13 +42,17 @@ const Conversation = ({
   uid,
   initialList,
   showOptSelect,
+  checkList,
+  page,
   onCheckboxChange,
 }: {
   chatId?: number
   uid?: number
   initialList?: ChatConversation[]
   showOptSelect: boolean
-  onCheckboxChange: (isChecked: boolean) => void
+  checkList: Record<number, boolean>
+  page?: number
+  onCheckboxChange: (isChecked: boolean, id: number) => void
 }) => {
   const { state } = useAppState()
   const [chatList, setChatList] = useState(initialList)
@@ -194,6 +197,7 @@ const Conversation = ({
           list={chatList || []} // 聊天列表，如果不存在则为空数组
           lite={true}
           showOptSelect={showOptSelect}
+          checkList={checkList}
           activeConversation={chatList?.find(
             (item) => item.conversation_id == chatId || item.to_uid == uid
           )}
@@ -210,7 +214,7 @@ const Conversation = ({
           flexShrink={0}
           overflow="auto"
         >
-          <ReturnList />
+          <ReturnList page={page} />
         </Box>
 
         <List
@@ -313,17 +317,11 @@ const Conversation = ({
 }
 
 //让返回按钮能够返回站内信的主页面
-const ReturnList = () => {
-  const navigate = useNavigate()
-
-  const handleReturn = () => {
-    navigate(pages.chat())
-  }
-
+const ReturnList = ({ page }: { page?: number }) => {
   return (
     <Button
       component={Link}
-      to={pages.chat()}
+      to={pages.chat() + `${page ? `?page=${page}` : ''}`}
       sx={(theme) => ({
         color: theme.palette.mode == 'light' ? '#0268FD' : '#90CAF9',
         marginRight: '30px',

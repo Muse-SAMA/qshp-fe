@@ -15,7 +15,12 @@ import Conversation from './Conversation'
 import ConversationList from './ConversationList'
 import Report from './ConversationReport'
 
-// 这个函数用于尝试将字符串转换为整数，如果无法转换或者转换结果为NaN，则返回undefined
+const buttonProps = {
+  backgroundColor: 'inherit',
+  border: 'none',
+  fontSize: '14px',
+}
+
 const tryParseInt = (value?: string) => {
   if (value == undefined) {
     return undefined
@@ -31,6 +36,13 @@ const Chat = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const chatId = tryParseInt(useParams()['plid'])
   const uid = tryParseInt(useParams()['uid'])
+  const [showOptSelect, setShowOptSelect] = useState(false)
+  const [selectedCount, setSelectedCount] = useState(0)
+  const [selectedConversations, setSelectedConversations] = useState({})
+
+  const toggleOptSelect = () => {
+    setShowOptSelect((prev) => !prev)
+  }
 
   const initQuery = () => {
     return {
@@ -49,25 +61,9 @@ const Chat = () => {
   }, [searchParams])
   useSignInChange(refetch)
 
-  // 状态用于控制全选和删除的显示与隐藏，默认为false
-  const [showOptSelect, setShowOptSelect] = useState(false)
-
-  // Toggle function for OptSelect visibility
-  const toggleOptSelect = () => {
-    setShowOptSelect((prev) => !prev)
-  }
-
-  // 记录当前选择的复选框个数
-  const [selectedCount, setSelectedCount] = useState(0)
-
-  const handleCheckboxChange = (checked: boolean) => {
+  const handleCheckboxChange = (checked: boolean, id: number) => {
     setSelectedCount((prevCount) => (checked ? prevCount + 1 : prevCount - 1))
-  }
-
-  const buttonProps = {
-    backgroundColor: 'inherit',
-    border: 'none',
-    fontSize: '14px',
+    setSelectedConversations((prev) => ({ ...prev, [id]: checked }))
   }
 
   return (
@@ -79,7 +75,6 @@ const Chat = () => {
           alignItems: 'center',
         }}
       >
-        {/* Button to toggle OptSelect visibility */}
         <p
           style={{
             padding: '0px',
@@ -122,7 +117,6 @@ const Chat = () => {
               )}
             </>
           )}
-          {/* 这里的设置好像是用于黑名单的衍生功能 */}
         </p>
         <Link to={pages.settings('blacklist')}>
           <Button
@@ -146,12 +140,15 @@ const Chat = () => {
           chatId={chatId}
           uid={uid}
           initialList={query.page == 1 ? chatList?.rows : undefined}
+          checkList={selectedConversations}
+          page={query.page}
           showOptSelect={showOptSelect}
         />
       ) : chatList ? (
         <ConversationList
           onCheckboxChange={handleCheckboxChange}
           list={chatList.rows}
+          checkList={selectedConversations}
           pagination={chatList}
           showOptSelect={showOptSelect}
         />
